@@ -1,2 +1,2 @@
 # gatekeeper-swagger
-The Swagger Spec for the reachability service. This is needed when you are servicing bank accounts for instant payments.
+The Swagger Spec for the secruity service. Interacting with the oauth endpoints for example.
