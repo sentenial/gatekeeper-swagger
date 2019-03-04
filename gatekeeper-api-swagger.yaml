@@ -193,6 +193,7 @@ paths:
                scopes: 
                 - openbanking_pisp
                 - bankadmin
+                - admin
                ipFiltering: true
                requestedOrganisation: ybo8zd8j2q
                requestingOrganisation: 6bee3razby
@@ -331,6 +332,7 @@ paths:
                scopes:
                 - openbanking_pisp
                 - bankadmin
+                - admin
                ipFiltering: true
                requestedOrganisation: ybo8zd8j2q
                requestingOrganisation: 6bee3razby
@@ -394,6 +396,7 @@ paths:
                scopes: 
                 - openbanking_pisp
                 - bankadmin
+                - admin
                ipFiltering: true
                requestedOrganisation: ybo8zd8j2q
                requestingOrganisation: ybo8zd8j2q
@@ -520,6 +523,7 @@ paths:
                scopes:
                 - openbanking_pisp
                 - bankadmin
+                - admin
                ipFiltering: true
                requestedOrganisation: ybo8zd8j2q
                requestingOrganisation: ybo8zd8j2q
@@ -796,6 +800,7 @@ definitions:
       scopes:
       - openbanking_pisp
       - bankadmin
+      - admin
       expiresIn: 360
   TokenResponse:
     type: object
