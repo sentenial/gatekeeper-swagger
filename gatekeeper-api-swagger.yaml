@@ -435,7 +435,6 @@ paths:
       security:
       - OrganisationOAuth2: 
         - bankadmin
-        - admin
       - OrganisationApiKey: []
   /tokens/revoke:
     post:
@@ -485,7 +484,6 @@ paths:
       security:
       - OrganisationOAuth2: 
         - bankadmin
-        - admin
       - OrganisationApiKey: []
   /tokens/{tokenId}/revoke:
     post:
@@ -550,7 +548,6 @@ paths:
       security:
       - OrganisationOAuth2: 
         - bankadmin
-        - admin
       - OrganisationApiKey: []
 securityDefinitions:
   OrganisationApiKey:
