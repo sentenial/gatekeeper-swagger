@@ -17,11 +17,138 @@ info:
 host: api.nuapay.com
 basePath: /
 tags:
+  - name: Certificates
+    description: PKI Management
   - name: OAuth Tokens Management
     description: OAuth Tokens Management
   - name: Organisations
     description: Organisations
 paths:
+  /certificates:
+    get:
+      tags:
+        - Certificates
+      summary: List certificates
+      description: List certificates
+      operationId: listUsingGET
+      produces:
+        - application/json
+      parameters:
+        - name: pagenumber
+          in: query
+          description: Page number
+          required: false
+          type: integer
+          format: int32
+        - name: pagesize
+          in: query
+          description: Page size
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CertificateGetCollectionResponseEnvelope'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - OrganisationOAuth2: []
+    post:
+      tags:
+        - Certificates
+      summary: Create certificate
+      description: Creates new certificate
+      operationId: generateUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            $ref: '#/definitions/CertificateGenerateRequest'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/CertificateGeneratePostResponseEnvelope'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - OrganisationOAuth2: []
+        - OrganisationApiKey: []
+
+  /certificates/{certificateId}:
+    delete:
+      tags:
+        - Certificates
+      summary: Delete certificate
+      description: Delete certificate
+      operationId: deleteUsingDELETE
+      produces:
+        - application/json
+      parameters:
+        - name: certificateId
+          in: path
+          description: certificateId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+        - OrganisationOAuth2: []
+        - OrganisationApiKey: []
+
   /organisations:
     get:
       tags:
@@ -559,6 +686,8 @@ securityDefinitions:
     scopes:
       bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
       admin: Use this scope if you are Merchant
+      pki_certificates: Use this scope to  create or delete certificate.
+      pki_certificates_read: Use this scope to read certificates.
 definitions:
   Address:
     type: object
@@ -588,6 +717,100 @@ definitions:
         type: string
         description: City/Town
         maxLength: 70
+  CertificateGeneratePostResponseEnvelope:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/CertificateResponse'
+      uri:
+        type: string
+    title: CertificateGeneratePostResponseEnvelope
+    example:
+      data:
+        id: 8ow24y2pdx
+        links: []
+        status: ACTIVE
+        uri: /certificates/8ow24y2pdx
+        issueDate: 2018-12-06T00:00:00.000+0000
+        expiryDate: 2028-12-06T00:00:00.000+0000
+        cert: |-
+          -----BEGIN CERTIFICATE-----
+          MIIEdjCCAl6gAwIBAgIFCaIz4P8wDQYJKoZIhvcNAQELBQAwVTELMAkGA1UEBhMCR0IxDzANBgNVBAcMBkxvbmRvbjEPMA0GA1UECgwGTnVhcGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMQ8wDQYDVQQDDAZOdWFwYXkwHhcNMTgxMjA2MTE0NzI2WhcNMjgxMjA2MTE0NzI2WjBaMRMwEQYDVQQDDAp4M2xieXBiZHc0MQ8wDQYDVQQKDAZOdWFwYXkxEzARBgNVBAsMCk51YXBheSBBUEkxEDAOBgNVBAcMB0tpbGRhcmUxCzAJBgNVBAYTAklFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQ8qW2MgXz/RvCOAqgaGWIeeHHzhk5TK0qsb6f/47JIRy4y7vY7leljKYlV3JPQaHbhNyvvOtg8SSAJzK2lz7BZz1jAh5KuT1O6bkHj1ciuxCNKIYOBNIcESKL6U91cQfeKLzX0NzUzvH8ZUww/2/ZjGmHuHAxlH3pA/dZor0/cTfNeRpETe7TVET4F8u1vrLFLGhScbjwefUFP8cszM4nGMVf7UbwQWisDS7I0c55KuqqoqwWJdteAok0TDkTrFN6t4VQyNqhlqL6HCgzdhuOJP3c7H9zxze+FxF6yD/i1T4R2f3hthRY9NsB7AeYJSbFXfP4DASZgv+j/W8RykEwIDAQABo0gwRjAOBgNVHQ8BAf8EBAMCBeAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHwYDVR0jBBgwFoAUIzFc1F8e8ejiFwGt2rB+x1G6EwowDQYJKoZIhvcNAQELBQADggIBAHA8uGJbFLXTOvt9++Dv9UsdI/K13KIY6tsZJXi7dzJpZAfJLLOPaR/vk6ABFxcViwRfa/It3NFarPfZBq9XiTeTic5rgn6OEw0dfxvbalL7tPLx3RaQPyw2mLWPTaqrQ7IqJ7Tz1tsXlbokn/XU5qSFGX7NUmkHkaRqE3L2TfKVkzuLvqkJybsZ1DcrNRFSDfrv6I6W6m7UAQJLg2JYSx9FDEEsjPrAqu3U/sbDVPQrEacEUMcQxcuFkXINj5IUpzrucXlc4VFwmWqbUnvkrVjNILeoT/DdjjLcRLdrbw9CWqC+rlzkbmsbAJx5cXqFpMHSjOPWdRF8DNw0+F0gS6VQcqEMW3ySlUyPH8anOFQ481QX0RMPbMTzVWo/bj9HgMYOt2hVUM6TzBQ2belJWjaPN95xdB/XPI56cwv1KVXuoP6N5Fc+lp5pWaKmHI6qSvP9rv1OP/p+7p308FvLcw4GxAFHUGUGHiDm6PG2xOCKoLqphjGwP20OOqzX9WLL6phOgn8XSJf2gBUqfbYoI1FAgJdveRKb1/GLP5AbFj4k3fDP9LMe2yEbqlDKyzCdCxD5HZWkM/vEsa/vMaBTrkdOQOFLICcKNedDvO6GvpaV18EPwYUOWDOBhZbtf/Nsi06r0gWwO/ScwK/PiEPeULwpvmwYK5FDFwYUlUO11N6m
+          -----END CERTIFICATE-----
+      uri: /certificates/8ow24y2pdx
+  CertificateGenerateRequest:
+    type: object
+    required:
+      - csr
+    properties:
+      csr:
+        type: string
+    title: CertificateGenerateRequest
+    example:
+      csr: "-----BEGIN CERTIFICATE REQUEST-----\r\nMIICnTCCAYUCAQAwWjETMBEGA1UEAwwKeDNsYnlwYmR3NDEPMA0GA1UECgwGTnVh\r\
+        \ncGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMRAwDgYDVQQHDAdLaWxkYXJlMQswCQYD\r\nVQQGEwJJRTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK0PKltjIF8/\r\
+        \n0bwjgKoGhliHnhx84ZOUytKrG+n/+OySEcuMu72O5XpYymJVdyT0Gh24Tcr7zrYP\r\nEkgCcytpc+wWc9YwIeSrk9Tum5B49XIrsQjSiGDgTSHBEii+lPdXEH3ii819Dc1M\r\
+        \n7x/GVMMP9v2Yxph7hwMZR96QP3WaK9P3E3zXkaRE3u01RE+BfLtb6yxSxoUnG48H\r\nn1BT/HLMzOJxjFX+1G8EForA0uyNHOeSrqqqKsFiXbXgKJNEw5E6xTereFUMjaoZ\r\
+        \nai+hwoM3YbjiT93Ox/c8c3vhcResg/4tU+Edn94bYUWPTbAewHmCUmxV3z+AwEmY\r\nL/o/1vEcpBMCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEATS0OkAt+HcSiOpmvZ4uD\r\
+        \nHhvy5qr8vFc0pIRjFAR7skOVh7XajmJAHHlxC9GaGTF4ILIkjy49j33noAargF7L\r\nuzjVNJDnFx+9BXqIkZEIiQ4OxhlkIKPgkeIrbqGhc3gN3Du60mbSGd8DQI20cjUX\r\
+        \ngX1sNNUo3RmWROTHcIPQEmk+eEa9rHABWMkMQAbkXg84FXlK/IhV0pPYSI8E+i/J\r\nISq99tt1RSXjnE8bDHRBPj8GHBvGiJmco+Jwd+KIYuvR4tzwtNN1Vn7R+PRkRzbX\r\
+        \n+qnGyA++UTJpugzoX/BiYGxcr3Kgeg38MSOYgMZlp2xpGCxPIZ+QnhwcUTQPwbnn\r\nGQ==\r\
+        \n-----END CERTIFICATE REQUEST------"
+  CertificateGetCollectionResponseEnvelope:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CertificateResponse'
+      page:
+        $ref: '#/definitions/RestResponsePaginationDetails'
+      sort:
+        type: array
+        items:
+          type: string
+      uri:
+        type: string
+    title: CertificateGetCollectionResponseEnvelope
+    example:
+      data:
+        - id: 8ow24y2pdx
+          links: null
+          status: ACTIVE
+          uri: /certificates/8ow24y2pdx
+          issueDate: 2018-12-06T00:00:00.000+0000
+          expiryDate: 2028-12-06T00:00:00.000+0000
+          cert: |-
+            -----BEGIN CERTIFICATE-----
+            MIIEdjCCAl6gAwIBAgIFCaIz4P8wDQYJKoZIhvcNAQELBQAwVTELMAkGA1UEBhMCR0IxDzANBgNVBAcMBkxvbmRvbjEPMA0GA1UECgwGTnVhcGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMQ8wDQYDVQQDDAZOdWFwYXkwHhcNMTgxMjA2MTE0NzI2WhcNMjgxMjA2MTE0NzI2WjBaMRMwEQYDVQQDDAp4M2xieXBiZHc0MQ8wDQYDVQQKDAZOdWFwYXkxEzARBgNVBAsMCk51YXBheSBBUEkxEDAOBgNVBAcMB0tpbGRhcmUxCzAJBgNVBAYTAklFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQ8qW2MgXz/RvCOAqgaGWIeeHHzhk5TK0qsb6f/47JIRy4y7vY7leljKYlV3JPQaHbhNyvvOtg8SSAJzK2lz7BZz1jAh5KuT1O6bkHj1ciuxCNKIYOBNIcESKL6U91cQfeKLzX0NzUzvH8ZUww/2/ZjGmHuHAxlH3pA/dZor0/cTfNeRpETe7TVET4F8u1vrLFLGhScbjwefUFP8cszM4nGMVf7UbwQWisDS7I0c55KuqqoqwWJdteAok0TDkTrFN6t4VQyNqhlqL6HCgzdhuOJP3c7H9zxze+FxF6yD/i1T4R2f3hthRY9NsB7AeYJSbFXfP4DASZgv+j/W8RykEwIDAQABo0gwRjAOBgNVHQ8BAf8EBAMCBeAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHwYDVR0jBBgwFoAUIzFc1F8e8ejiFwGt2rB+x1G6EwowDQYJKoZIhvcNAQELBQADggIBAHA8uGJbFLXTOvt9++Dv9UsdI/K13KIY6tsZJXi7dzJpZAfJLLOPaR/vk6ABFxcViwRfa/It3NFarPfZBq9XiTeTic5rgn6OEw0dfxvbalL7tPLx3RaQPyw2mLWPTaqrQ7IqJ7Tz1tsXlbokn/XU5qSFGX7NUmkHkaRqE3L2TfKVkzuLvqkJybsZ1DcrNRFSDfrv6I6W6m7UAQJLg2JYSx9FDEEsjPrAqu3U/sbDVPQrEacEUMcQxcuFkXINj5IUpzrucXlc4VFwmWqbUnvkrVjNILeoT/DdjjLcRLdrbw9CWqC+rlzkbmsbAJx5cXqFpMHSjOPWdRF8DNw0+F0gS6VQcqEMW3ySlUyPH8anOFQ481QX0RMPbMTzVWo/bj9HgMYOt2hVUM6TzBQ2belJWjaPN95xdB/XPI56cwv1KVXuoP6N5Fc+lp5pWaKmHI6qSvP9rv1OP/p+7p308FvLcw4GxAFHUGUGHiDm6PG2xOCKoLqphjGwP20OOqzX9WLL6phOgn8XSJf2gBUqfbYoI1FAgJdveRKb1/GLP5AbFj4k3fDP9LMe2yEbqlDKyzCdCxD5HZWkM/vEsa/vMaBTrkdOQOFLICcKNedDvO6GvpaV18EPwYUOWDOBhZbtf/Nsi06r0gWwO/ScwK/PiEPeULwpvmwYK5FDFwYUlUO11N6m
+            -----END CERTIFICATE-----
+      page:
+        pageNumber: 1
+        pageSize: 5
+        totalElements: 5
+        totalPages: 1
+      sort: []
+      uri: /certificates
+  CertificateResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      links:
+        type: array
+        items:
+          $ref: '#/definitions/RestResponseLink'
+      status:
+        type: string
+      uri:
+        type: string
+      issueDate:
+        type: string
+      expiryDate:
+        type: string
+      cert:
+        type: string
+    title: CertificateResponse
   Contact:
     type: object
     properties:
