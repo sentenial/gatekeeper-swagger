@@ -1,28 +1,26 @@
-swagger: '2.0'
+openapi: 3.0.1
 info:
-  description: 'Gatekeeper Swagger API'
-  version: '1.1.0'
   title: Gatekeeper Resource Server public REST API
+  description: Gatekeeper Swagger API
   termsOfService: For internal use only
   contact:
     name: nuapay
-    url: 'https://nuapay.com'
+    url: https://nuapay.com
     email: engineering@nuapay.com
   license:
     name: For internal use only
-    url: 'https://nuapay.com'
+    url: https://nuapay.com
+  version: 3.0.3
   x-logo:
     backgroundColor: '#FFFFFF'
-    url: 'https://www.nuapay.com/wp-content/uploads/2018/04/nuapay.svg'
-host: api.nuapay.com
-basePath: /
+    url: https://www.nuapay.com/wp-content/uploads/2018/04/nuapay.svg
+servers:
+  - url: //api.nuapay.com/
 tags:
   - name: Certificates
     description: PKI Management
   - name: OAuth Tokens Management
-    description: OAuth Tokens Management
-  - name: Organisations
-    description: Organisations
+    description: oAuth Tokens Management
 paths:
   /certificates:
     get:
@@ -31,100 +29,128 @@ paths:
       summary: List certificates
       description: List certificates
       operationId: listUsingGET
-      produces:
-        - application/json
       parameters:
         - name: pagenumber
           in: query
           description: Page number
-          required: false
-          type: integer
-          format: int32
+          schema:
+            type: integer
+            format: int32
         - name: pagesize
           in: query
           description: Page size
-          required: false
-          type: integer
-          format: int32
+          schema:
+            type: integer
+            format: int32
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: '#/definitions/CertificateGetCollectionResponseEnvelope'
-        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateGetCollectionResponseEnvelope'
+        400:
           description: Bad request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - pki_certificates
-        - pki_certificates_read
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - pki_certificates
-        - pki_certificates_read
-      - PartnerApiKey: []
+        - MerchantOAuth2:
+            - pki_certificates
+            - pki_certificates_read
+        - MerchantApiKey: []
+        - PartnerOAuth2:
+            - pki_certificates
+            - pki_certificates_read
+        - PartnerApiKey: []
+      x-sentenial:
+        internal: false
     post:
       tags:
         - Certificates
       summary: Create certificate
       description: Creates new certificate
       operationId: generateUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - application/json
       parameters:
-        - in: body
-          name: request
-          description: request
-          required: true
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
           schema:
-            $ref: '#/definitions/CertificateGenerateRequest'
+            maxLength: 50
+            type: string
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateGenerateRequest'
+        required: true
       responses:
-        '201':
+        201:
           description: Created
-          schema:
-            $ref: '#/definitions/CertificateGeneratePostResponseEnvelope'
-        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateGeneratePostResponseEnvelope'
+        400:
           description: Bad request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - pki_certificates
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - pki_certificates
-      - PartnerApiKey: []
+        - MerchantOAuth2:
+            - pki_certificates
+        - MerchantApiKey: []
+        - PartnerOAuth2:
+            - pki_certificates
+        - PartnerApiKey: []
+      x-codegen-request-body-name: request
+      x-sentenial:
+        internal: false      
   /certificates/{certificateId}:
     delete:
       tags:
@@ -132,498 +158,728 @@ paths:
       summary: Delete certificate
       description: Delete certificate
       operationId: deleteUsingDELETE
-      produces:
-        - application/json
       parameters:
         - name: certificateId
           in: path
           description: certificateId
           required: true
-          type: string
+          schema:
+            type: string
       responses:
-        '200':
+        200:
           description: OK
-        '401':
+          content: {}
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - pki_certificates
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - pki_certificates
-      - PartnerApiKey: []
-  /organisations:
-    get:
-      tags:
-        - Organisations
-      summary: List Organisations
-      description: The endpoint allows to list Organisations in requesting Organisation hierarchy
-      operationId: ListOrganisationsUsingGET
-      produces:
-        - application/json
-      parameters:
-        - name: pagenumber
-          in: query
-          description: Page number
-          required: false
-          type: integer
-          default: 1
-          format: int32
-        - name: pagesize
-          in: query
-          description: Page size
-          required: false
-          type: integer
-          default: 20
-          format: int32
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/OrganisationsResponse'
-          examples:
-            application/json:
-              uri: "/organisations"
-              data: 
-               - 
-                id: j29p3kpabx
-                uri: /organisations/j29p3kpabx
-                name: Originator Name
-                countryOfRegistration: IE
-                code: ORNA
-                registeredNumber: '32342'
-                vatNumber: null
-                language: en
-                address:
-                  line1: Address
-                  line2: null
-                  postCode: null
-                  state: null
-                  town: Town
-                  country: IE
-                contact:
-                  firstName: First Name
-                  lastName: Last Name
-                  telephone: '21242124'
-                  mobile: null
-                  fax: null
-                  email1: email@example.com
-                  email2: null
-                  title: Mr
-                  position: None
-                  contactType:
-                    - PRIMARY
-                  emailNotification: false
-                links: []
-              page: 
-               pageNumber: 1
-               pageSize: 20
-               totalElements: 1
-               totalPages: 1
-              sort: []
-        '400':
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-          examples:
-            application/json:
-              returnCode: '40000'
-              returnDescription: Input validation errors
-              details:
-              - code: '50003'
-                field: pagenumber
-                description: Page Number is invalid
-                resourceUri: 
-              - code: '50005'
-                field: pagesize
-                description: Page Size is invalid
-                resourceUri: 
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-          examples:
-            application/json:
-              returnCode: null
-              returnDescription: null
-              details: null
-        '403':
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-          examples:
-            application/json:
-              returnCode: null
-              returnDescription: null
-              details: null
-        '405':
-          description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-          examples:
-            application/json:
-              returnCode: null
-              returnDescription: null
-              details: null            
-        '422':
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-          examples:
-            application/json:
-              returnCode: '40000'
-              returnDescription: Input validation errors
-              details:
-              - code: '50004'
-                field: pagesize
-                description: Max page size is exceeded
-                resourceUri: 
-      security:
-      - PartnerOAuth2:
-        - bankadmin
+        - MerchantApiKey: []
+        - PartnerApiKey: []
+        - MerchantOAuth2:
+            - pki_certificates
+        - PartnerOAuth2:
+            - pki_certificates
+      x-sentenial:
+        internal: false     
   /organisations/{encodedOrganisationId}/tokens:
     post:
       tags:
         - OAuth Tokens Management
       summary: Request Access Token for Organisation
-      description: This endpoing allows an organisation to exchange an API Key for an OAuth Access Token
+      description: This endpoint allows an organisation to exchange an API Key for
+        an OAuth Access Token
       operationId: requestTokensForOrganisationUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - application/json
       parameters:
-        - in: path
-          type: string
-          name: encodedOrganisationId
-          required: true
-          description: Encoded Organisation Id returned by List Organisations endpoint. 
-        - in: body
-          name: request
-          description: request
+        - name: encodedOrganisationId
+          in: path
+          description: Encoded Organisation Id returned by List Organisations endpoint.
           required: true
           schema:
-            $ref: '#/definitions/TokenRequest'
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+        required: true
       responses:
-        '201':
+        201:
           description: Created
-          schema:
-            $ref: '#/definitions/TokenResponse'
-          examples:
+          content:
             application/json:
-              uri: "organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-              data: 
-               id: "3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               uri: "organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ"
-               tokenType: BEARER
-               accessType: CR
-               expiryTime: 1545062272000
-               scopes: 
-                - openbanking_pisp
-                - bankadmin
-               ipFiltering: true
-               requestedOrganisation: ybo8zd8j2q
-               requestingOrganisation: 6bee3razby
-               status: ACTIVE
-               createdTimestamp: 1544975872000
-               revokedTimestamp: null
-               links: 
-                - 
-                 id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
-                 resourceType: revoketoken
-                 uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-        '400':
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp
+                    - bankadmin
+                  ipFiltering: true
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: 6bee3razby
+                  status: ACTIVE
+                  createdTimestamp: 1544975872000
+                  links:
+                    - id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                      resourceType: revoketoken
+                      uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+        400:
           description: Bad request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
           description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
           description: Unsupported Media Type
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - PartnerOAuth2:
-        - bankadmin
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-codegen-request-body-name: request
+      x-sentenial:
+        internal: false      
+  /organisations/{encodedOrganisationId}/applications/tokens:
+    post:
+      tags:
+        - OAuth Tokens Management
+      summary: Request Application Access Token for Organisation
+      description: This endpoint allows Partner to request Application OAuth Access
+        Token on behalf of their Merchant
+      operationId: requestApplicationTokensForOrganisationUsingPOST
+      parameters:
+        - name: encodedOrganisationId
+          in: path
+          description: Encoded Organisation Id returned by List Organisations endpoint.
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key.
+            The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationTokenRequest'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /organisations/ybo8zd8j2q/applications/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /organisations/ybo8zd8j2q/applications/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  accessToken: <to be filled post development>
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp_read
+                    - banks_read
+                  ipFiltering: true
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: 6bee3razby
+                  status: ACTIVE
+                  createdTimestamp: 1544975872000
+                  resourceId: 8ow24y2pdx
+                  applicationToken: true
+                  links:
+                    - id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                      resourceType: revoketoken
+                      uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - PartnerOAuth2:
+            - application_tokens
+        - PartnerGroupOAuth2:
+            - application_tokens
+      x-codegen-request-body-name: request
+      x-sentenial:
+        internal: false      
   /organisations/{encodedOrganisationId}/tokens/revoke:
     post:
       tags:
         - OAuth Tokens Management
       summary: Revoke All Tokens for Organisation
-      description: Use this endpoint to revoke an access token previously generated for a specific organisation
+      description: Use this endpoint to revoke an access token previously generated
+        for a specific organisation
       operationId: revokeTokensForOrganisationUsingPOST
-      consumes:
-        - application/json
-        - text/plain
-      produces:
-        - application/json
       parameters:
-        - in: path
-          type: string
-          name: encodedOrganisationId
+        - name: encodedOrganisationId
+          in: path
+          description: Encoded Organisation Id returned by List Organisations endpoint.
           required: true
-          description: Encoded Organisation Id returned by List Organisations endpoint. 
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: '#/definitions/TokensRevokeAllResponseEnvelope'
-          examples:
+          content:
             application/json:
-              uri: organisations/ybo8zd8j2q/tokens/revoke
-              data: 
+              schema:
+                $ref: '#/components/schemas/TokensRevokeAllResponseEnvelope'
+              example:
                 uri: organisations/ybo8zd8j2q/tokens/revoke
-                revokedTokensCount: 3
-                links: []
-        '401':
+                data:
+                  uri: organisations/ybo8zd8j2q/tokens/revoke
+                  revokedTokensCount: 3
+                  links: []
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
           description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
           description: Unsupported Media Type
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - PartnerOAuth2:
-        - bankadmin
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-sentenial:
+        internal: false            
   /organisations/{encodedOrganisationId}/tokens/{tokenId}/revoke:
     post:
       tags:
         - OAuth Tokens Management
-      summary: Revoke Token for organisation with tokenId  
+      summary: Revoke Token for organisation with tokenId
       description: The endpoint allows to Revoke to AccessToken was generated for particular organisation.
       operationId: revokeTokenForOrganisationUsingPOST
-      consumes:
-        - application/json
-        - text/plain
-      produces:
-        - application/json
       parameters:
-        - in: path
-          name: encodedOrganisationId
+        - name: encodedOrganisationId
+          in: path
           description: Id of Organisation returned by List Organisations Endpoint
           required: true
-          type: string
-        - in: path
-          name: tokenId
+          schema:
+            type: string
+        - name: tokenId
+          in: path
           description: Token Id returned by Create Access Token endpoint.
           required: true
-          type: string
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: '#/definitions/TokenResponse'
-          examples:
+          content:
             application/json:
-              uri: "organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-              data: 
-               id: "3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               uri: "organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-               accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ"
-               tokenType: BEARER
-               accessType: CR
-               expiryTime: 1545062272000      
-               scopes:
-                - openbanking_pisp
-                - bankadmin
-               ipFiltering: true
-               requestedOrganisation: ybo8zd8j2q
-               requestingOrganisation: 6bee3razby
-               status: REVOKED
-               createdTimestamp: 1544975872000
-               revokedTimestamp: 1545062272000
-               links: [] 
-        '401':
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /organisations/ybo8zd8j2q/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+                  accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp
+                    - bankadmin
+                  ipFiltering: true
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: 6bee3razby
+                  status: REVOKED
+                  createdTimestamp: 1544975872000
+                  revokedTimestamp: 1545062272000
+                  links: []
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - PartnerOAuth2:
-        - bankadmin
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-sentenial:
+        internal: false                                               
   /tokens:
     post:
       tags:
         - OAuth Tokens Management
-      summary: Request Access Token 
+      summary: Request Access Token
       description: The endpoint allows Organisation to exchange APIKey to AccessToken
       operationId: requestTokenUsingPOST
-      consumes:
-        - application/json
-      produces:
-        - application/json
       parameters:
-        - in: body
-          name: request
-          description: request
-          required: true
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
           schema:
-            $ref: '#/definitions/TokenRequest'
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+        required: true
       responses:
-        '201':
+        201:
           description: Created
-          schema:
-            $ref: '#/definitions/TokenResponse'
-          examples:
+          content:
             application/json:
-              uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-              data: 
-               id: "3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ"
-               tokenType: BEARER
-               accessType: CR
-               expiryTime: 1545062272000
-               scopes: 
-                - openbanking_pisp
-                - bankadmin
-               ipFiltering: true
-               requestedOrganisation: ybo8zd8j2q
-               requestingOrganisation: ybo8zd8j2q
-               status: ACTIVE
-               createdTimestamp: 1544975872000
-               revokedTimestamp: null
-               links: 
-                - 
-                 id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
-                 resourceType: revoketoken
-                 uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-        '400':
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp
+                    - bankadmin
+                  ipFiltering: true
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: ybo8zd8j2q
+                  status: ACTIVE
+                  createdTimestamp: 1544975872000
+                  links:
+                    - id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                      resourceType: revoketoken
+                      uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+        400:
           description: Bad request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
           description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
           description: Unsupported Media Type
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - admin
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - bankadmin
-      - PartnerApiKey: []
+        - MerchantApiKey: []
+        - MerchantOAuth2:
+            - admin
+        - PartnerApiKey: []
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupApiKey: []
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-codegen-request-body-name: request
+      x-sentenial:
+        internal: false      
+  /applications/tokens:
+    post:
+      tags:
+        - OAuth Tokens Management
+      summary: Request Application Access Token
+      description: The endpoint allows Organisation to exchange APIKey to Application
+        Access Token
+      operationId: requestApplicationTokenUsingPOST
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationTokenRequest'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp_read
+                    - banks_read
+                  ipFiltering: false
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: ybo8zd8j2q
+                  status: ACTIVE
+                  createdTimestamp: 1544975872000
+                  resourceId: 8ow24y2pdx
+                  applicationToken: true
+                  links:
+                    - id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                      resourceType: revoketoken
+                      uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
+          description: Unsupported Media Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - MerchantApiKey: []
+        - MerchantOAuth2:
+            - application_tokens
+      x-codegen-request-body-name: request
+      x-sentenial:
+        internal: false      
   /tokens/revoke:
     post:
       tags:
         - OAuth Tokens Management
       summary: Revoke all Access Tokens
-      description: The endpoint allows to Revoke to all Active AccessTokens for requesting Organisation
+      description: The endpoint allows to Revoke to all Active AccessTokens for requesting
+        Organisation
       operationId: revokeAllTokensUsingPOST
-      consumes:
-        - application/json
-        - text/plain
-      produces:
-        - application/json
-      parameters: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: '#/definitions/TokensRevokeAllResponseEnvelope'
-          examples:
+          content:
             application/json:
-              uri: /tokens/revoke
-              data: 
+              schema:
+                $ref: '#/components/schemas/TokensRevokeAllResponseEnvelope'
+              example:
                 uri: /tokens/revoke
-                revokedTokensCount: 3
-                links: []
-        '401':
+                data:
+                  uri: /tokens/revoke
+                  revokedTokensCount: 3
+                  links: []
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
           description: Method Not Allowed
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        415:
           description: Unsupported Media Type
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - admin
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - bankadmin
-      - PartnerApiKey: []
+        - MerchantApiKey: []
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - MerchantOAuth2:
+            - admin
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-sentenial:
+        internal: false            
   /tokens/{tokenId}/revoke:
     post:
       tags:
@@ -631,503 +887,513 @@ paths:
       summary: Revoke Token with JTI
       description: The endpoint allows to Revoke to AccessToken
       operationId: revokeTokenUsingPOST
-      consumes:
-        - application/json
-        - text/plain
-      produces:
-        - application/json
       parameters:
-        - in: path
-          name: tokenId
+        - name: tokenId
+          in: path
           description: Token Id returned by Create Access Token endpoint.
           required: true
-          type: string
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
+          schema:
+            maxLength: 50
+            type: string
+            x-sentenial:
+              enriched: "true"
+          x-sentenial:
+            enriched: "true"
       responses:
-        '200':
+        200:
           description: OK
-          schema:
-            $ref: '#/definitions/TokenResponse'
-          examples:
+          content:
             application/json:
-              uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-              data: 
-               id: "3fe40be4-8139-4bcc-a6fc-9fc6df927b31"
-               uri: "/tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke"
-               accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ"
-               tokenType: BEARER
-               accessType: CR
-               expiryTime: 1545062272000      
-               scopes:
-                - openbanking_pisp
-                - bankadmin
-               ipFiltering: true
-               requestedOrganisation: ybo8zd8j2q
-               requestingOrganisation: ybo8zd8j2q
-               status: REVOKED
-               createdTimestamp: 1544975872000
-               revokedTimestamp: 1545062272000
-               links: []
-        '401':
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+                data:
+                  id: 3fe40be4-8139-4bcc-a6fc-9fc6df927b31
+                  uri: /tokens/3fe40be4-8139-4bcc-a6fc-9fc6df927b31/revoke
+                  accessToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpcF9maWx0ZXJpbmciOmZhbHNlLCJhdWQiOlsiZ2siLCJ3ZWJob29rcyIsInBpIiwicm1zIiwiaW5zdGFudCJdLCJvcmlnaW5hdG9yX29yZ19pZCI6ImoyOXAza3BhYngiLCJ1c2VyX2lkIjoid3FqMjlubXhuZSIsInVzZXJfbmFtZSI6InN5c3RlbSIsIm9yZ19pZCI6IiIsInNjb3BlIjpbInVzZXJkaXJlY3QiXSwiZXhwIjoxNTQ0NTM5MzQ3LCJhdXRob3JpdGllcyI6WyJGTV9CdWxrX0NhbmNlbCIsIkJhbmtfVXBkYXRlIiwiSW5zdGFudF9QYXltZW50c19DcmVhdGVfUmVzZXJ2YXRpb24iLCJDcmVkaXRUcmFuc2Zlcl9SZWplY3QiLCJHTE9CQUxfU0VBUkNIIiwiU2NoZW1lX0FkZFVwZGF0ZSIsIkJhbmtHcm91cF9MaXN0Iiwid2ViaG9va19hZG1pbiIsIkN1c3RvbWVyX0VkaXQiLCJCYW5rX0FwcHJvdmFsX0VkaXRvciIsIkFkbWluX1VzZXJfQWN0aXZhdGUiLCJCYW5rX1ZpZXciLCJDcmVkaXRvckFjY291bnRfQWRkIiwiQ3JlZGl0b3JBY2NvdW50X0xpc3RWaWV3IiwiRk1fRUJBX1NlYXJjaCIsIkJhbmtfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0VkaXRTZXR0aW5ncyIsIkNyZWRpdG9yX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX1NlYXJjaCIsIkFQUFJPVkFMX1ZJRVdFUiIsIk51YXBheV9BcHBfTGlzdF9BY2NvdW50cyIsIkJlbmVmaWNpYXJ5X0FkZCIsIkNyZWRpdG9yX1NlY3VyaXR5X1ZpZXciLCJCaWNfUmVhY2hhYmlsaXR5X1ZhbGlkYXRpb24iLCJDcmVkaXRvcl9Db250YWN0X0FkZEVkaXQiLCJCYW5rX1VzZXJfQWN0aXZhdGUiLCJGTV9NYW5kYXRlX1NlYXJjaCIsIkZNX0REX1JfVHJhbnNhY3Rpb25fVmlldyIsIkNvbnRhY3RzX0xpc3RWaWV3QWRkRWRpdCIsIkRlYnRvck1hbmRhdGVfQmxvY2tBY3RpdmF0ZSIsIk51YXBheV9BcHBfTGlzdF9UcmFuc2FjdGlvbnMiLCJCYW5rX1VzZXJfRWRpdCIsIkZNX01hbmRhdGVfRmlsZV9VcGxvYWQiLCJPcmdVbml0X1ZpZXciLCJCYW5rR3JvdXBfV1NfVXNlcl9MaXN0Vmlld0FkZEVkaXQiLCJDcmVkaXRvck1hbmRhdGVfRERfU2VhcmNoIiwiQ2xpZW50X0xhbmdfVmlldyIsIkZNX0JhdGNoX1JldmVyc2UiLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWN0aXZhdGUiLCJPcmdVbml0X0xpc3QiLCJGTV9ERF9WaWV3IiwiQmFua0dyb3VwX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9Vc2VyX1ZpZXciLCJWYWxpZGF0ZV9BY2NvdW50IiwiQ2xhaW1fTGlzdFZpZXciLCJDbGllbnRfTGlzdCIsIkNyZWRpdG9yQWNjb3VudF9FZGl0IiwiQU1MX1NlcnZpY2UiLCJDcmVkaXRvcl9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVkaXRvck1hbmRhdGVfTm9FZGl0QWNjb3VudERldGFpbHMiLCJGTV9CdWxrX1Jldm9rZSIsIkNyZWRpdG9yTWFuZGF0ZV9FZGl0IiwiQ2xpZW50X0FwcHJvdmFsX0VkaXRvciIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfTGlzdFZpZXciLCJCZW5lZmljaWFyeUFjY291bnRfTGlzdFZpZXdBZGRFZGl0IiwiQ3JlZGl0b3JfQ29udGFjdF9MaXN0VmlldyIsIlJvb3RQYXltZW50U2NoZW1lX0xpc3RWaWV3QWRkRWRpdCIsIkFQUFJPVkFMX0VESVRPUiIsIk9yZ1VuaXRfQWRkVXBkYXRlIiwiQmFua0dyb3VwX0FwcHJvdmFsX0VkaXRvciIsIkZNX0JhdGNoX0NhbmNlbCIsIkZNX0REX0xpc3RCYXRjaGVzIiwiUm9sZV9Bc3NpZ25tZW50IiwiQ3JlZGl0VHJhbnNmZXJfQWRkIiwiQ2xpZW50X0FkZCIsIlNjaGVtZV9MaW1pdHNfVmlldyIsIkZNX0JhdGNoX1ZpZXciLCJGTV9UcmFuc2FjdGlvbl9SZXZva2UiLCJNYW5kYXRlQ29sbGVjdGlvbl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfRXhwb3J0IiwiQmFua19FeHBvcnRUaW1lc19WaWV3IiwiQ3JlZGl0b3JTY2hlbWVfQ29udGFjdF9SZW1vdmUiLCJGTV9QYWluMl9GaWxlX0V4cG9ydCIsIkNTTV9MaXN0IiwiQ1NNX1ZpZXciLCJBZ2VuY3lCYW5rX1ZpZXciLCJDbGllbnRfRWRpdExpbWl0cyIsIkZNX0J1bGtfUmV2ZXJzZSIsIkJhbmtfVXNlcl9BZGQiLCJDcmVkaXRvck1hbmRhdGVfQ2FuY2VsIiwiQWdlbmN5QmFua19MaXN0IiwiRk1fQmF0Y2hfUmV2b2tlIiwiU2VhcmNoX1Bvc3RpbmciLCJDcmVkaXRvck1hbmRhdGVfUGF5bWVudF9BZGQiLCJCYW5rR3JvdXBfQXBwcm92YWxfVmlld2VyIiwiQmFua0dyb3VwX1NlY3VyaXR5X0VkaXQiLCJSb2xlX0FkZEVkaXQiLCJPcmlnaW5hdG9yX0V4cG9ydFRpbWVzX0VkaXQiLCJEZWJ0b3JBY2NvdW50X0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfTGlzdCIsIkFkbWluX1VzZXJfQWRkIiwiUm9sZV9MaXN0VmlldyIsIkZNX0NUX1NlYXJjaCIsIkNyZWRpdG9yX1VzZXJfTGlzdCIsIkNyZWRpdFRyYW5zZmVyX0VkaXQiLCJBZG1pbl9Vc2VyX0VkaXQiLCJGTV9NYW5kYXRlX0ZpbGVfU2VhcmNoIiwiQmFua0dyb3VwX1VzZXJfRWRpdCIsIkZNX1RyYW5zYWN0aW9uX0NhbmNlbCIsIkNyZWRpdG9yX1VzZXJfQWN0aXZhdGUiLCJDcmVkaXRvcl9Vc2VyX1ZpZXciLCJDcmVkaXRUcmFuc2Zlcl9MaXN0VmlldyIsIkZNX0REX0ZpbGVfUmV2b2tlIiwiQ2xpZW50X0VkaXQiLCJTY2hlbWVfTGlzdCIsIkRpcmVjdERlYml0X0xpc3RWaWV3IiwiU2NoZW1lX1ZpZXciLCJCYW5rX0FkZCIsIkFnZW5jeUJhbmtfQWRkVXBkYXRlIiwiQ2xpZW50X0FwcHJvdmFsX1ZpZXdlciIsIlZpZXdfT3JpZ2luYXRvcl9SZXBvcnRzIiwiRGVidG9yTWFuZGF0ZV9MaXN0VmlldyIsIkJhbmtHcm91cF9Vc2VyX0RlYWN0aXZhdGUiLCJDcmVhdGVfUG9zdGluZyIsIk9yaWdpbmF0b3JfRXhwb3J0VGltZXNfVmlldyIsIkJhbmtfQXBwcm92YWxfQ29uZmlndXJhdGlvbiIsIkJlbmVmaWNpYXJ5X0xpc3RWaWV3IiwiQ3JlZGl0b3JNYW5kYXRlX0VkaXRBY2NvdW50RGV0YWlscyIsIkZNX0NUX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JfVU1SX0NvbmZpZ3VyYXRpb24iLCJDbGllbnRfTGFuZ19FZGl0IiwiQ3JlZGl0b3JfRmlsZV9VcGxvYWQiLCJDb2xsZWN0aW5nQWNjb3VudF9FZGl0IiwiQmFua0dyb3VwX1VzZXJfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1ZpZXdIaXN0b3J5IiwiQmFua19TY2hlbWVfVmlldyIsIlBheW1lbnRfSW5pdGlhdGlvbl9TZXJ2aWNlX1Byb3ZpZGVyIiwiQ3JlZGl0b3JNYW5kYXRlX0FjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1N1c3BlbmQiLCJDcmVkaXRvclNjaGVtZV9MaXN0VmlldyIsIkNyZWRpdG9yX1dTX1VzZXJfTGlzdFZpZXdBZGRFZGl0IiwiTnVhcGF5X0FwcF9WaWV3X0FjY291bnQiLCJQcm9jZXNzX0luc3RhbnRDcmVkaXRUcmFuc2Zlcl9XZWJob29rcyIsIkNyZWRpdG9yU2NoZW1lX0FjY291bnRfUmVtb3ZlIiwiQ3JlZGl0b3JfU2VjdXJpdHlfRWRpdCIsIkNyZWRpdG9yTWFuZGF0ZV9SZXN1Ym1pdCIsIkJhbmtHcm91cF9VcGRhdGUiLCJDcmVkaXRvcl9Vc2VyX0FkZCIsIkNTTV9BZGRVcGRhdGUiLCJDcmVkaXRvclNjaGVtZV9BZGQiLCJIb2xkaW5nQWNjb3VudF9MaXN0VmlldyIsIkZpbmFuY2lhbEluc3RpdHV0aW9uX0xpc3RWaWV3QWRkRWRpdCIsIkNsYWltX0VkaXRDYW5jZWwiLCJEZWJ0b3JNYW5kYXRlX0FkZEVkaXQiLCJDbGllbnRfQmlsbGluZ0NoYXJnZXNfQ29uZmlndXJhdGlvbiIsIkNyZWRpdG9yU2NoZW1lX09wdGlvbnNfRWRpdCIsIkRpcmVjdERlYml0X0VkaXQiLCJGTV9ERF9GaWxlX0xlZ2FjeV9TZWFyY2giLCJGTV9ERF9GaWxlX1ZpZXciLCJDbGFpbV9BZGRFZGl0IiwiRk1fVHJhbnNhY3Rpb25fUmV2ZXJzZSIsIkZNX0REX1NlYXJjaCIsIkJhbmtfVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX0NvbnRyYWN0X0FkZEVkaXQiLCJGTV9DVF9GaWxlX0V4cG9ydCIsIkRlYnRvckFjY291bnRfQmxvY2tBY3RpdmF0ZSIsIkNsaWVudF9WaWV3IiwiQ3VzdG9tZXJfTGlzdCIsIkNyZWRpdG9yU2NoZW1lX0xpc3RBY2NvdW50IiwiQ3JlZGl0VHJhbnNmZXJfUmVjYWxsIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9MaXN0IiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRfRXhwb3J0IiwiQWRtaW5fVXNlcl9MaXN0IiwiQmFua19CaWxsaW5nQ2hhcmdlc19Db25maWd1cmF0aW9uIiwiQmFua0dyb3VwX1NjaGVtZUxpbWl0c19WaWV3IiwiRGlyZWN0RGViaXRfVW5wYWlkTGlzdFZpZXciLCJQdWJsaWMiLCJBZG1pbl9Vc2VyX1ZpZXciLCJGTV9CdWxrX1NlYXJjaCIsIkJlbmVmaWNpYXJ5X0xpc3RFZGl0IiwiRk1fRERfRmlsZV9Eb3dubG9hZCIsIkludm9rZV9TRFMiLCJDcmVkaXRvck1hbmRhdGVfQWRkIiwiQ3JlZGl0b3JNYW5kYXRlX1BheW1lbnRTY2hlZHVsZV9DYW5jZWwiLCJDdXN0b21lcl9BZGQiLCJDb250YWN0c19FZGl0IiwiRk1fRERfRmlsZV9VcGxvYWQiLCJDcmVkaXRvclNjaGVtZV9BY2NvdW50X0FkZEVkaXQiLCJCYW5rX0V4cG9ydFRpbWVzX0VkaXQiLCJCYW5rR3JvdXBfU2VjdXJpdHlfVmlldyIsIkNsaWVudF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JTY2hlbWVfT3B0aW9uc19WaWV3IiwiQ3JlZGl0b3JMb2dvX0FkZCIsIkZNX0JhdGNoX1NlYXJjaCIsIkJhbmtfVXNlcl9WaWV3IiwiRGlyZWN0RGViaXRfUmV2b2tlIiwiQWRtaW5fVXNlcl9EZWFjdGl2YXRlIiwiQ3JlZGl0b3JNYW5kYXRlX1JlYWN0aXZhdGUiLCJGTV9ERF9GaWxlX1BhaW5fU2VhcmNoIiwiQmFua0dyb3VwX0FkZCIsIk51YXBheV9BcHBfQWNjb3VudCIsIkZNX1BhaW4yX0ZpbGVfVXBsb2FkIiwiQ3JlZGl0b3JNYW5kYXRlX0xpc3RWaWV3IiwiRGlyZWN0RGViaXRfQWRkIiwiRGlyZWN0RGViaXRfQ2FuY2VsIiwiQ3JlZGl0b3JTY2hlbWVfVU1SX0NvbmZpZ3VyYXRpb24iLCJCYW5rX1VzZXJfTGlzdCIsIkJhbmtHcm91cF9BcHByb3ZhbF9Db25maWd1cmF0aW9uIiwiQ3JlZGl0b3JNYW5kYXRlX0ltYWdlVXBsb2FkIiwiQmFua0dyb3VwX1ZpZXciLCJCYW5rX0FwcHJvdmFsX1ZpZXdlciJdLCJqdGkiOiIzZmU0MGJlNC04MTM5LTRiY2MtYTZmYy05ZmM2ZGY5MjdiMzEiLCJjbGllbnRfaWQiOiJvcmlnaXhfZ2tfdXNlciJ9.lAR5VFVcLaWNTdk43pbsk3bs3jOqWdedOi9RsGDYsNNl94yvHOh09wgzp822V2SnF_Ca4O9f_-Agn1iACKO71Gq9u2kgfpZGE03xURZXlzfmkZXQrOw7JvSlBQ_QeSe5xhhquHvIvYk8bH8Zg114J-BobaiKKf66vAgj8jkevg_sJah0kLecxNpVey33zSLIfzo3xB-Gq9l_qkkU37TGmOrykUYGF9YLLwQ2wnHu7jPzdL5WmU6sFW3bzDsGVztWRzCrkltCPcW42LvHBnWDWK1lCOjPqSW8nRKlZfKgRfmvQxBG5DYxEt14tPqAvEofYWcDKgdS_xZa4ELytZsuQQ
+                  tokenType: BEARER
+                  accessType: CR
+                  requestingAccessType: BN
+                  parentId: 8ow24y2pdx
+                  expiryTime: 1545062272000
+                  scopes:
+                    - openbanking_pisp
+                    - bankadmin
+                  ipFiltering: true
+                  requestedOrganisation: ybo8zd8j2q
+                  requestingOrganisation: ybo8zd8j2q
+                  status: REVOKED
+                  createdTimestamp: 1544975872000
+                  revokedTimestamp: 1545062272000
+                  links: []
+        401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
           description: Forbidden
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
           description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        405:
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        422:
           description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
       security:
-      - MerchantOAuth2:
-        - admin
-      - MerchantApiKey: []
-      - PartnerOAuth2:
-        - bankadmin
-      - PartnerApiKey: []
-securityDefinitions:
-  MerchantApiKey:
-    type: basic
-  PartnerApiKey:
-    type: basic
-  MerchantOAuth2:
-    type: oauth2
-    tokenUrl: https://api.nuapay.com/oauth/token_key
-    flow: password
-    scopes:
-      admin: Use this scope if you are Merchant
-      pki_certificates: Use this scope to  create or delete certificate.
-      pki_certificates_read: Use this scope to read certificates.
-  PartnerOAuth2:
-    type: oauth2
-    tokenUrl: https://api.nuapay.com/oauth/token_key
-    flow: password
-    scopes:
-      bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
-      pki_certificates: Use this scope to  create or delete certificate.
-      pki_certificates_read: Use this scope to read certificates.
-definitions:
-  Address:
-    type: object
-    properties:
-      country:
-        type: string
-        description: Country ISO Code
-        minLength: 2
-        maxLength: 2
-      line1:
-        type: string
-        description: Address Line 1
-        maxLength: 70
-      line2:
-        type: string
-        description: Address Line 2
-        maxLength: 70
-      postCode:
-        type: string
-        description: Post Code
-        maxLength: 16
-      state:
-        type: string
-        description: State
-        maxLength: 70
-      town:
-        type: string
-        description: City/Town
-        maxLength: 70
-  CertificateGeneratePostResponseEnvelope:
-    type: object
-    properties:
-      data:
-        $ref: '#/definitions/CertificateResponse'
-      uri:
-        type: string
-    title: CertificateGeneratePostResponseEnvelope
-    example:
-      data:
-        id: 8ow24y2pdx
-        links: []
-        status: ACTIVE
-        uri: /certificates/8ow24y2pdx
-        issueDate: 2018-12-06T00:00:00.000+0000
-        expiryDate: 2028-12-06T00:00:00.000+0000
-        cert: |-
-          -----BEGIN CERTIFICATE-----
-          MIIEdjCCAl6gAwIBAgIFCaIz4P8wDQYJKoZIhvcNAQELBQAwVTELMAkGA1UEBhMCR0IxDzANBgNVBAcMBkxvbmRvbjEPMA0GA1UECgwGTnVhcGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMQ8wDQYDVQQDDAZOdWFwYXkwHhcNMTgxMjA2MTE0NzI2WhcNMjgxMjA2MTE0NzI2WjBaMRMwEQYDVQQDDAp4M2xieXBiZHc0MQ8wDQYDVQQKDAZOdWFwYXkxEzARBgNVBAsMCk51YXBheSBBUEkxEDAOBgNVBAcMB0tpbGRhcmUxCzAJBgNVBAYTAklFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQ8qW2MgXz/RvCOAqgaGWIeeHHzhk5TK0qsb6f/47JIRy4y7vY7leljKYlV3JPQaHbhNyvvOtg8SSAJzK2lz7BZz1jAh5KuT1O6bkHj1ciuxCNKIYOBNIcESKL6U91cQfeKLzX0NzUzvH8ZUww/2/ZjGmHuHAxlH3pA/dZor0/cTfNeRpETe7TVET4F8u1vrLFLGhScbjwefUFP8cszM4nGMVf7UbwQWisDS7I0c55KuqqoqwWJdteAok0TDkTrFN6t4VQyNqhlqL6HCgzdhuOJP3c7H9zxze+FxF6yD/i1T4R2f3hthRY9NsB7AeYJSbFXfP4DASZgv+j/W8RykEwIDAQABo0gwRjAOBgNVHQ8BAf8EBAMCBeAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHwYDVR0jBBgwFoAUIzFc1F8e8ejiFwGt2rB+x1G6EwowDQYJKoZIhvcNAQELBQADggIBAHA8uGJbFLXTOvt9++Dv9UsdI/K13KIY6tsZJXi7dzJpZAfJLLOPaR/vk6ABFxcViwRfa/It3NFarPfZBq9XiTeTic5rgn6OEw0dfxvbalL7tPLx3RaQPyw2mLWPTaqrQ7IqJ7Tz1tsXlbokn/XU5qSFGX7NUmkHkaRqE3L2TfKVkzuLvqkJybsZ1DcrNRFSDfrv6I6W6m7UAQJLg2JYSx9FDEEsjPrAqu3U/sbDVPQrEacEUMcQxcuFkXINj5IUpzrucXlc4VFwmWqbUnvkrVjNILeoT/DdjjLcRLdrbw9CWqC+rlzkbmsbAJx5cXqFpMHSjOPWdRF8DNw0+F0gS6VQcqEMW3ySlUyPH8anOFQ481QX0RMPbMTzVWo/bj9HgMYOt2hVUM6TzBQ2belJWjaPN95xdB/XPI56cwv1KVXuoP6N5Fc+lp5pWaKmHI6qSvP9rv1OP/p+7p308FvLcw4GxAFHUGUGHiDm6PG2xOCKoLqphjGwP20OOqzX9WLL6phOgn8XSJf2gBUqfbYoI1FAgJdveRKb1/GLP5AbFj4k3fDP9LMe2yEbqlDKyzCdCxD5HZWkM/vEsa/vMaBTrkdOQOFLICcKNedDvO6GvpaV18EPwYUOWDOBhZbtf/Nsi06r0gWwO/ScwK/PiEPeULwpvmwYK5FDFwYUlUO11N6m
-          -----END CERTIFICATE-----
-      uri: /certificates/8ow24y2pdx
-  CertificateGenerateRequest:
-    type: object
-    required:
-      - csr
-    properties:
-      csr:
-        type: string
-    title: CertificateGenerateRequest
-    example:
-      csr: "-----BEGIN CERTIFICATE REQUEST-----\r\nMIICnTCCAYUCAQAwWjETMBEGA1UEAwwKeDNsYnlwYmR3NDEPMA0GA1UECgwGTnVh\r\
-        \ncGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMRAwDgYDVQQHDAdLaWxkYXJlMQswCQYD\r\nVQQGEwJJRTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK0PKltjIF8/\r\
-        \n0bwjgKoGhliHnhx84ZOUytKrG+n/+OySEcuMu72O5XpYymJVdyT0Gh24Tcr7zrYP\r\nEkgCcytpc+wWc9YwIeSrk9Tum5B49XIrsQjSiGDgTSHBEii+lPdXEH3ii819Dc1M\r\
-        \n7x/GVMMP9v2Yxph7hwMZR96QP3WaK9P3E3zXkaRE3u01RE+BfLtb6yxSxoUnG48H\r\nn1BT/HLMzOJxjFX+1G8EForA0uyNHOeSrqqqKsFiXbXgKJNEw5E6xTereFUMjaoZ\r\
-        \nai+hwoM3YbjiT93Ox/c8c3vhcResg/4tU+Edn94bYUWPTbAewHmCUmxV3z+AwEmY\r\nL/o/1vEcpBMCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEATS0OkAt+HcSiOpmvZ4uD\r\
-        \nHhvy5qr8vFc0pIRjFAR7skOVh7XajmJAHHlxC9GaGTF4ILIkjy49j33noAargF7L\r\nuzjVNJDnFx+9BXqIkZEIiQ4OxhlkIKPgkeIrbqGhc3gN3Du60mbSGd8DQI20cjUX\r\
-        \ngX1sNNUo3RmWROTHcIPQEmk+eEa9rHABWMkMQAbkXg84FXlK/IhV0pPYSI8E+i/J\r\nISq99tt1RSXjnE8bDHRBPj8GHBvGiJmco+Jwd+KIYuvR4tzwtNN1Vn7R+PRkRzbX\r\
-        \n+qnGyA++UTJpugzoX/BiYGxcr3Kgeg38MSOYgMZlp2xpGCxPIZ+QnhwcUTQPwbnn\r\nGQ==\r\
-        \n-----END CERTIFICATE REQUEST------"
-  CertificateGetCollectionResponseEnvelope:
-    type: object
-    properties:
-      data:
-        type: array
-        items:
-          $ref: '#/definitions/CertificateResponse'
-      page:
-        $ref: '#/definitions/RestResponsePaginationDetails'
-      sort:
-        type: array
-        items:
+        - MerchantApiKey: []
+        - PartnerApiKey: []
+        - PartnerGroupApiKey: []
+        - MerchantOAuth2:
+            - admin
+        - PartnerOAuth2:
+            - bankadmin
+        - PartnerGroupOAuth2:
+            - bankadmin
+      x-sentenial:
+        internal: false                             
+components:
+  schemas:
+    MTLS:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Enables/Disables MTLS validation
+          default: false
+        thumbprints:
+          maxLength: 122
+          minLength: 0
           type: string
-      uri:
-        type: string
-    title: CertificateGetCollectionResponseEnvelope
-    example:
-      data:
-        - id: 8ow24y2pdx
-          links: null
+          description: Semicolon separated list of Certificate thumbprints that are validated when MTLS is enabled.
+        subjectCommonName:
+          maxLength: 100
+          minLength: 0
+          type: string
+          description: Certificate Subject Common Name accepted when MTLS is enabled.
+    CertificateGeneratePostResponseEnvelope:
+      title: CertificateGeneratePostResponseEnvelope
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CertificateResponse'
+        uri:
+          type: string
+      example:
+        data:
+          id: 8ow24y2pdx
+          links: []
           status: ACTIVE
           uri: /certificates/8ow24y2pdx
-          issueDate: 2018-12-06T00:00:00.000+0000
-          expiryDate: 2028-12-06T00:00:00.000+0000
+          issueDate: 2018-12-06
+          expiryDate: 2028-12-06
           cert: |-
             -----BEGIN CERTIFICATE-----
             MIIEdjCCAl6gAwIBAgIFCaIz4P8wDQYJKoZIhvcNAQELBQAwVTELMAkGA1UEBhMCR0IxDzANBgNVBAcMBkxvbmRvbjEPMA0GA1UECgwGTnVhcGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMQ8wDQYDVQQDDAZOdWFwYXkwHhcNMTgxMjA2MTE0NzI2WhcNMjgxMjA2MTE0NzI2WjBaMRMwEQYDVQQDDAp4M2xieXBiZHc0MQ8wDQYDVQQKDAZOdWFwYXkxEzARBgNVBAsMCk51YXBheSBBUEkxEDAOBgNVBAcMB0tpbGRhcmUxCzAJBgNVBAYTAklFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQ8qW2MgXz/RvCOAqgaGWIeeHHzhk5TK0qsb6f/47JIRy4y7vY7leljKYlV3JPQaHbhNyvvOtg8SSAJzK2lz7BZz1jAh5KuT1O6bkHj1ciuxCNKIYOBNIcESKL6U91cQfeKLzX0NzUzvH8ZUww/2/ZjGmHuHAxlH3pA/dZor0/cTfNeRpETe7TVET4F8u1vrLFLGhScbjwefUFP8cszM4nGMVf7UbwQWisDS7I0c55KuqqoqwWJdteAok0TDkTrFN6t4VQyNqhlqL6HCgzdhuOJP3c7H9zxze+FxF6yD/i1T4R2f3hthRY9NsB7AeYJSbFXfP4DASZgv+j/W8RykEwIDAQABo0gwRjAOBgNVHQ8BAf8EBAMCBeAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHwYDVR0jBBgwFoAUIzFc1F8e8ejiFwGt2rB+x1G6EwowDQYJKoZIhvcNAQELBQADggIBAHA8uGJbFLXTOvt9++Dv9UsdI/K13KIY6tsZJXi7dzJpZAfJLLOPaR/vk6ABFxcViwRfa/It3NFarPfZBq9XiTeTic5rgn6OEw0dfxvbalL7tPLx3RaQPyw2mLWPTaqrQ7IqJ7Tz1tsXlbokn/XU5qSFGX7NUmkHkaRqE3L2TfKVkzuLvqkJybsZ1DcrNRFSDfrv6I6W6m7UAQJLg2JYSx9FDEEsjPrAqu3U/sbDVPQrEacEUMcQxcuFkXINj5IUpzrucXlc4VFwmWqbUnvkrVjNILeoT/DdjjLcRLdrbw9CWqC+rlzkbmsbAJx5cXqFpMHSjOPWdRF8DNw0+F0gS6VQcqEMW3ySlUyPH8anOFQ481QX0RMPbMTzVWo/bj9HgMYOt2hVUM6TzBQ2belJWjaPN95xdB/XPI56cwv1KVXuoP6N5Fc+lp5pWaKmHI6qSvP9rv1OP/p+7p308FvLcw4GxAFHUGUGHiDm6PG2xOCKoLqphjGwP20OOqzX9WLL6phOgn8XSJf2gBUqfbYoI1FAgJdveRKb1/GLP5AbFj4k3fDP9LMe2yEbqlDKyzCdCxD5HZWkM/vEsa/vMaBTrkdOQOFLICcKNedDvO6GvpaV18EPwYUOWDOBhZbtf/Nsi06r0gWwO/ScwK/PiEPeULwpvmwYK5FDFwYUlUO11N6m
             -----END CERTIFICATE-----
-      page:
-        pageNumber: 1
-        pageSize: 5
-        totalElements: 5
-        totalPages: 1
-      sort: []
-      uri: /certificates
-  CertificateResponse:
-    type: object
-    properties:
-      id:
-        type: string
-      links:
-        type: array
-        items:
-          $ref: '#/definitions/RestResponseLink'
-      status:
-        type: string
-      uri:
-        type: string
-      issueDate:
-        type: string
-      expiryDate:
-        type: string
-      cert:
-        type: string
-    title: CertificateResponse
-  Contact:
-    type: object
-    properties:
-      email1:
-        type: string
-        description: Contact email address
-        maxLength: 254
-      email2:
-        type: string
-        description: Contact alternative email address
-        maxLength: 254
-      emailNotification:
-        type: boolean
-        description: Determine if notifications are enabled for this contact
-      fax:
-        type: string
-        description: Fax 
-        maxLength: 30
-      firstName:
-        type: string
-        description: First Name
-        maxLength: 70
-      lastName:
-        type: string
-        description: Last Name
-        maxLength: 70
-      mobile:
-        type: string
-        description: Mobile Number
-        maxLength: 30
-      position:
-        type: string
-        description: Contact position in the organisation
-        enum:
-          - None
-          - CEO
-          - Manager
-          - Other
-      telephone:
-        type: string
-        description: Telephone number
-        maxLength: 30
-      title:
-        type: string
-        description: Contact title
-        enum:
-          - None
-          - Mr
-          - Ms
-          - Mrs
-          - Miss
-          - Dr
-          - Prof
-          - Fr
-          - Rev
-          - Bishop
-          - Sr
-      contactType:
-        type: array
-        description: Contact types
-        items:
+        uri: /certificates/8ow24y2pdx
+    CertificateGenerateRequest:
+      title: CertificateGenerateRequest
+      required:
+        - csr
+      type: object
+      properties:
+        csr:
+          type: string
+      example:
+        csr: "-----BEGIN CERTIFICATE REQUEST-----\r\nMIICnTCCAYUCAQAwWjETMBEGA1UEAwwKeDNsYnlwYmR3NDEPMA0GA1UECgwGTnVh\r\
+          \ncGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMRAwDgYDVQQHDAdLaWxkYXJlMQswCQYD\r\nVQQGEwJJRTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK0PKltjIF8/\r\
+          \n0bwjgKoGhliHnhx84ZOUytKrG+n/+OySEcuMu72O5XpYymJVdyT0Gh24Tcr7zrYP\r\nEkgCcytpc+wWc9YwIeSrk9Tum5B49XIrsQjSiGDgTSHBEii+lPdXEH3ii819Dc1M\r\
+          \n7x/GVMMP9v2Yxph7hwMZR96QP3WaK9P3E3zXkaRE3u01RE+BfLtb6yxSxoUnG48H\r\nn1BT/HLMzOJxjFX+1G8EForA0uyNHOeSrqqqKsFiXbXgKJNEw5E6xTereFUMjaoZ\r\
+          \nai+hwoM3YbjiT93Ox/c8c3vhcResg/4tU+Edn94bYUWPTbAewHmCUmxV3z+AwEmY\r\nL/o/1vEcpBMCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEATS0OkAt+HcSiOpmvZ4uD\r\
+          \nHhvy5qr8vFc0pIRjFAR7skOVh7XajmJAHHlxC9GaGTF4ILIkjy49j33noAargF7L\r\nuzjVNJDnFx+9BXqIkZEIiQ4OxhlkIKPgkeIrbqGhc3gN3Du60mbSGd8DQI20cjUX\r\
+          \ngX1sNNUo3RmWROTHcIPQEmk+eEa9rHABWMkMQAbkXg84FXlK/IhV0pPYSI8E+i/J\r\nISq99tt1RSXjnE8bDHRBPj8GHBvGiJmco+Jwd+KIYuvR4tzwtNN1Vn7R+PRkRzbX\r\
+          \n+qnGyA++UTJpugzoX/BiYGxcr3Kgeg38MSOYgMZlp2xpGCxPIZ+QnhwcUTQPwbnn\r\nGQ==\r\
+          \n-----END CERTIFICATE REQUEST------"
+    CertificateGetCollectionResponseEnvelope:
+      title: CertificateGetCollectionResponseEnvelope
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertificateResponse'
+        page:
+          $ref: '#/components/schemas/RestResponsePaginationDetails'
+        sort:
+          type: array
+          items:
+            type: string
+        uri:
+          type: string
+      example:
+        data:
+          - id: 8ow24y2pdx
+            status: ACTIVE
+            uri: /certificates/8ow24y2pdx
+            issueDate: 2018-12-06
+            expiryDate: 2028-12-06
+            cert: |-
+              -----BEGIN CERTIFICATE-----
+              MIIEdjCCAl6gAwIBAgIFCaIz4P8wDQYJKoZIhvcNAQELBQAwVTELMAkGA1UEBhMCR0IxDzANBgNVBAcMBkxvbmRvbjEPMA0GA1UECgwGTnVhcGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMQ8wDQYDVQQDDAZOdWFwYXkwHhcNMTgxMjA2MTE0NzI2WhcNMjgxMjA2MTE0NzI2WjBaMRMwEQYDVQQDDAp4M2xieXBiZHc0MQ8wDQYDVQQKDAZOdWFwYXkxEzARBgNVBAsMCk51YXBheSBBUEkxEDAOBgNVBAcMB0tpbGRhcmUxCzAJBgNVBAYTAklFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArQ8qW2MgXz/RvCOAqgaGWIeeHHzhk5TK0qsb6f/47JIRy4y7vY7leljKYlV3JPQaHbhNyvvOtg8SSAJzK2lz7BZz1jAh5KuT1O6bkHj1ciuxCNKIYOBNIcESKL6U91cQfeKLzX0NzUzvH8ZUww/2/ZjGmHuHAxlH3pA/dZor0/cTfNeRpETe7TVET4F8u1vrLFLGhScbjwefUFP8cszM4nGMVf7UbwQWisDS7I0c55KuqqoqwWJdteAok0TDkTrFN6t4VQyNqhlqL6HCgzdhuOJP3c7H9zxze+FxF6yD/i1T4R2f3hthRY9NsB7AeYJSbFXfP4DASZgv+j/W8RykEwIDAQABo0gwRjAOBgNVHQ8BAf8EBAMCBeAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwHwYDVR0jBBgwFoAUIzFc1F8e8ejiFwGt2rB+x1G6EwowDQYJKoZIhvcNAQELBQADggIBAHA8uGJbFLXTOvt9++Dv9UsdI/K13KIY6tsZJXi7dzJpZAfJLLOPaR/vk6ABFxcViwRfa/It3NFarPfZBq9XiTeTic5rgn6OEw0dfxvbalL7tPLx3RaQPyw2mLWPTaqrQ7IqJ7Tz1tsXlbokn/XU5qSFGX7NUmkHkaRqE3L2TfKVkzuLvqkJybsZ1DcrNRFSDfrv6I6W6m7UAQJLg2JYSx9FDEEsjPrAqu3U/sbDVPQrEacEUMcQxcuFkXINj5IUpzrucXlc4VFwmWqbUnvkrVjNILeoT/DdjjLcRLdrbw9CWqC+rlzkbmsbAJx5cXqFpMHSjOPWdRF8DNw0+F0gS6VQcqEMW3ySlUyPH8anOFQ481QX0RMPbMTzVWo/bj9HgMYOt2hVUM6TzBQ2belJWjaPN95xdB/XPI56cwv1KVXuoP6N5Fc+lp5pWaKmHI6qSvP9rv1OP/p+7p308FvLcw4GxAFHUGUGHiDm6PG2xOCKoLqphjGwP20OOqzX9WLL6phOgn8XSJf2gBUqfbYoI1FAgJdveRKb1/GLP5AbFj4k3fDP9LMe2yEbqlDKyzCdCxD5HZWkM/vEsa/vMaBTrkdOQOFLICcKNedDvO6GvpaV18EPwYUOWDOBhZbtf/Nsi06r0gWwO/ScwK/PiEPeULwpvmwYK5FDFwYUlUO11N6m
+              -----END CERTIFICATE-----
+        page:
+          pageNumber: 1
+          pageSize: 5
+          totalElements: 5
+          totalPages: 1
+        sort: []
+        uri: /certificates
+    CertificateResponse:
+      title: CertificateResponse
+      type: object
+      properties:
+        id:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestResponseLink'
+        status:
           type: string
           enum:
-            - PRIMARY
-            - CUSTOMER
-            - ACCOUNTS
-            - TECHNICAL
-    title: Contact
-  ErrorDetail:
-    type: object
-    properties:
-      code:
-        type: string
-      description:
-        type: string
-      field:
-        type: string
-      resourceUri:
-        type: string
-    title: ErrorDetail
-  ErrorResponse:
-    type: object
-    properties:
-      details:
-        type: array
-        items:
-          $ref: '#/definitions/ErrorDetail'
-      returnCode:
-        type: string
-      returnDescription:
-        type: string
-    title: ErrorResponse
-  Organisation:
-    type: object
-    properties:
-      id:
-        type: string
-        description: Resource Id
-        maxLength: 10
-      uri:
-        type: string
-        description: resource Uri
-      name:
-        type: string
-        description: The Name of the Organisation
-        maxLength: 100
-      address:
-        $ref: '#/definitions/Address'
-      code: 
-        type: string
-        description: 4 characters code that is added for use in File names of reports created for the Organisation.
-        maxLength: 4
-      countryOfRegistration:
-        type: string
-        description: The Country in which the Organisation is registered.
-        minLength: 2
-        maxLength: 2
-      language:
-        type: string
-        description: Language
-        enum:
-          - EN
-          - FR
-          - NL
-          - FL
-          - BE
-          - ES
-          - DE
-          - PT
-          - IT
-          - SK
-      registeredNumber:
-        type: string
-        description: The Registered Number number of the Organisation. This value will vary depending on the country in which the Organisation is registered. In general it will be a 'National' Company registration number for tax purposes etc. 
-        maxLength: 15
-      vatNumber:
-        type: string
-        description: The VAT number of the Organisation.
-        maxLength: 15
-      contact:
-        $ref: '#/definitions/Contact'
-      links:
-        type: array
-        items:
-          $ref: '#/definitions/RestResponseLink'
-  OrganisationsResponse:
-    type: object
-    properties: 
-      uri:
-        type: string
-      data:
-        type: array
-        items:
-          $ref: '#/definitions/Organisation'
-      page:
-        $ref: '#/definitions/RestResponsePaginationDetails'
-      sort:
-        type: array
-        items:
+            - ACTIVE
+            - DELETED
+        uri:
           type: string
-  RestResponseLink:
-    type: object
-    properties:
-      id:
-        type: string
-      resourceType:
-        type: string
-      uri:
-        type: string
-    title: RestResponseLink
-  RestResponsePaginationDetails:
-    type: object
-    properties:
-      pageNumber:
-        type: integer
-        format: int32
-      pageSize:
-        type: integer
-        format: int32
-      totalElements:
-        type: integer
-        format: int32
-      totalPages:
-        type: integer
-        format: int32
-    title: RestResponsePaginationDetails
-  TokenRequest:
-    type: object
-    required:
-      - scopes
-    properties: 
-      scopes:
-        type: array
-        items:
+        issueDate:
           type: string
-        description: List of scopes. Please contact support for available scopes.
-      expiresIn:
-        type: integer
-        format: int32
-        description: Access token expiry time in seconds.
-        minimum: 10
-        maximum: 31556926
-        exclusiveMinimum: false
-        exclusiveMaximum: false
-        default: 10
-    example:
-      scopes:
-      - openbanking_pisp
-      - bankadmin
-      expiresIn: 360
-  TokenResponse:
-    type: object
-    properties: 
-      uri:
-        type: string
-        description:  this endpoint uri
-      data:
-        $ref: '#/definitions/TokenResponseData'
-  TokenResponseData:
-    type: object
-    properties: 
-      id:
-        type: string
-        description: Generated token jti identifier.
-      uri:
-        type: string
-        description: Generated token uri
-      accessToken:
-        type: string
-      tokenType:
-        type: string
-        enum:
-          - BEARER
-      accessType:
-        type: string
-        description: Holds token accessType
-        enum:
-          - CR 
-          - BN 
-          - BG 
-          - NA 
-      expiryTime:
-        type: integer
-        format: int64
-        description: Expiry timestamp
-      scopes:
-        type: array
-        items:
+          format: date
+        expiryDate:
           type: string
-        description:  Requested scopes for which the token is generated
-      ipFiltering:
-        type: boolean
-        description: Indicate if IP filtering is enabled for returned token. If true request using the token can be done only from predefined IP address.
-      requestedOrganisation:
-        type: string
-        description: Encoded organisation id the token for generated for.
-      requestingOrganisation:
-        type: string
-        description: Encoded organisation id that initiated token generation request. Can be same or different as requested organisation.
-      status:
-        type: string
-        enum:
-          - ACTIVE
-          - REVOKED
-        description: Token status.  Until the token is revoked its status will be ACTIVE. Also after expiry time is in the past.
-      createdTimestamp:
-        type: integer
-        format: int64
-        description: Return timemestamp(Epoch) the token was generated.
-      revokedTimestamp:
-        type: integer
-        format: int64
-        description: Return timemestamp(Epoch) the token was revoked.  
-      links:
-        type: array
-        items:
-          $ref: '#/definitions/RestResponseLink'
-  TokensRevokeAllResponseEnvelope:
-    type: object
-    properties: 
-      uri:
-        type: string
-      data:
-          $ref: '#/definitions/TokensRevokeAllResponse'
-  TokensRevokeAllResponse:
-    type: object
-    properties: 
-      uri:
-        type: string
-      revokedTokensCount:
-        type: integer
-        format: int32
-        description: Number of revoked tokens as part of this request
-      links:
-        type: array
-        items:
-          $ref: '#/definitions/RestResponseLink'
+          format: date
+        cert:
+          type: string
+    ErrorDetail:
+      title: ErrorDetail
+      type: object
+      description: Holds list of input validation errors
+      properties:
+        code:
+          type: string
+          description: Error code
+        description:
+          type: string
+          description: Error description
+        field:
+          type: string
+          description: JSON path to request object property the error is related to
+        resourceUri:
+          type: string
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+          description: Holds list of input validation errors
+        returnCode:
+          type: string
+          description: Error type code
+        returnDescription:
+          type: string
+          description: Error type description
+    OrganizationSecurityRequest:
+      title: OrganizationSecurityRequest
+      type: object
+      properties:
+        domains:
+          type: array
+          items:
+            type: string
+      example:
+        domains:
+          - http://www.sentenial.com
+    RestResponseLink:
+      title: RestResponseLink
+      type: object
+      properties:
+        id:
+          type: string
+          description: Encoded Id of linked resource
+        resourceType:
+          description: Resource Type
+          type: string
+        uri:
+          description: Resource URI
+          type: string
+    RestResponsePaginationDetails:
+      title: RestResponsePaginationDetails
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          format: int32
+          description: Page Number
+        pageSize:
+          type: integer
+          format: int32
+          description: Page Size
+        totalElements:
+          type: integer
+          format: int32
+          description: Total Number of elements returned. Response parameter only
+        totalPages:
+          type: integer
+          format: int32
+          description: Total Number of pages returned. Response parameter only
+    TokenRequest:
+      required:
+        - scopes
+      type: object
+      properties:
+        scopes:
+          type: array
+          items:
+            description: List of scopes. List Products for full list of available scopes.
+            type: string
+        expiresIn:
+          maximum: 31556926
+          exclusiveMaximum: false
+          minimum: 1E+1
+          exclusiveMinimum: false
+          type: integer
+          description: Access token expiry time in seconds.
+          format: int32
+          default: 10
+      example:
+        scopes:
+          - openbanking_pisp
+          - bankadmin
+        expiresIn: 360
+    ApplicationTokenRequest:
+      required:
+        - products
+        - resourceId
+      type: object
+      properties:
+        products:
+          uniqueItems: true
+          type: array
+          items:
+            description: List of product keys. List Products for list of available keys.
+            type: string
+        resourceId:
+          type: string
+          description: ResourceId the accessToken is generated for.
+      example:
+        products:
+          - open_banking_pis
+        resourceId: 8ow24y2pdx
+    TokenResponse:
+      type: object
+      properties:
+        uri:
+          type: string
+          description: This endpoint uri
+        data:
+          $ref: '#/components/schemas/TokenResponseData'
+    TokenResponseData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Generated token jti identifier
+        uri:
+          type: string
+          description: Generated token uri
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          enum:
+            - BEARER
+        accessType:
+          type: string
+          description: Holds token accessType
+          enum:
+            - CR
+            - BN
+            - BG
+            - RT
+            - NA
+        requestingAccessType:
+          type: string
+          description: Holds the requesting org's accessType
+          enum:
+            - CR
+            - BN
+            - BG
+            - RT
+            - NA
+        expiryTime:
+          type: integer
+          description: Expiry timestamp
+          format: int64
+        scopes:
+          type: array
+          description: Requested scopes for which the token is generated
+          items:
+            description: Requested scopes for which the token is generated
+            type: string
+        ipFiltering:
+          type: boolean
+          description: Indicate if IP filtering is enabled for returned token. If true request using the token can be done only from predefined IP address.
+        requestedOrganisation:
+          type: string
+          description: Encoded organisation id the token was generated for.
+        requestingOrganisation:
+          type: string
+          description: Encoded organisation id that initiated token generation request. Can be same or different as requested organisation.
+        parentId:
+          type: string
+          description: Encoded organisation id that is a parent for the requested organisation.
+        status:
+          type: string
+          description: Token status. Until the token is revoked its status will be ACTIVE. Also after expiry time is in the past.
+          enum:
+            - ACTIVE
+            - REVOKED
+        createdTimestamp:
+          type: integer
+          description: Return timestamp(Epoch) the token was generated.
+          format: int64
+        revokedTimestamp:
+          type: integer
+          description: Return timestamp(Epoch) the token was revoked.
+          format: int64
+        resourceId:
+          type: string
+          description: ID of a resource for which this token was issued.
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestResponseLink'
+    TokensRevokeAllResponseEnvelope:
+      type: object
+      properties:
+        uri:
+          type: string
+        data:
+          $ref: '#/components/schemas/TokensRevokeAllResponse'
+    TokensRevokeAllResponse:
+      type: object
+      properties:
+        uri:
+          type: string
+        revokedTokensCount:
+          type: integer
+          description: Number of revoked tokens as part of this request
+          format: int32
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestResponseLink'
+  securitySchemes:
+    MerchantApiKey:
+      type: http
+      scheme: basic
+    PartnerApiKey:
+      type: http
+      scheme: basic
+    PartnerGroupApiKey:
+      type: http
+      scheme: basic
+    MerchantOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            admin: Use this scope if you are Merchant
+            pki_certificates: Use this scope to  create or delete certificate.
+            pki_certificates_read: Use this scope to read certificates.
+            organisation_products: Use this scope to manage organisation products.
+            organisation_products_read: Use this scope to read organisation products.
+            products_read: Use this scope to read all products.
+            user_scopes: Use this scope to manage the user scopes.
+            user_scopes_read: Use this scope to read the user scopes.
+            user_init: Use this scope to initialize a user credentials.
+            credentials_status: Use this scope to get a user credentials status.
+            organisation_security_admin: Use this scope to manage security configuration.
+            application_tokens: Use this scope to request application token.
+    PartnerOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
+            pki_certificates: Use this scope to  create or delete certificate.
+            pki_certificates_read: Use this scope to read certificates.
+            organisation_products: Use this scope to manage organisation products.
+            organisation_products_read: Use this scope to read organisation products.
+            products_read: Use this scope to read all products.
+            scopes_read: Use this scope to read organisation available scopes.
+            user_scopes: Use this scope to manage the user scopes.
+            user_scopes_read: Use this scope to read the user scopes.
+            user_init: Use this scope to initialize a user credentials.
+            organisation_security_admin: Use this scope to manage security configuration.
+    PartnerGroupOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
+            pki_certificates: Use this scope to  create or delete certificate.
+            pki_certificates_read: Use this scope to read certificates.
+            organisation_products: Use this scope to manage organisation products.
+            organisation_products_read: Use this scope to read organisation products.
+            products_read: Use this scope to read all products.
+            scopes_read: Use this scope to read organisation available scopes.
+            user_scopes: Use this scope to manage the user scopes.
+            user_scopes_read: Use this scope to read the user scopes.
+            user_init: Use this scope to initialize a user credentials.
+            organisation_security_admin: Use this scope to manage security configuration.
+    AdminOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            organisation_products: Use this scope to manage organisation products.
+            organisation_products_read: Use this scope to read organisation products.
+            products_read: Use this scope to read all products.
+            scopes_read: Use this scope to read organisation available scopes.
+            user_scopes: Use this scope to manage the user scopes.
+            user_scopes_read: Use this scope to read the user scopes.
+            user_init: Use this scope to initialize a user credentials.
+    SystemOAuth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.nuapay.com/oauth/token_key
+          scopes:
+            organisation_products: Use this scope to manage organisation products.
+            organisation_products_read: Use this scope to read organisation products.
+            products_read: Use this scope to read all products.
