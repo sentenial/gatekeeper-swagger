@@ -1200,8 +1200,8 @@ components:
           uniqueItems: true
           type: array
           items:
-            description: List of product keys. List Products for list of available keys.
-            type: string
+           type: string
+          description: List of product keys. List Products for list of available keys. One of `open_banking_pis`, `open_banking_ais`, `direct_debits`, `credit_transfers`, `accounts_validation_and_enrichment`, `accounts`, `nuapay_accounts`, `emandates`, `account_verification`.
         resourceId:
           type: string
           description: ResourceId the accessToken is generated for.
