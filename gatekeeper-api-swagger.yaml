@@ -2,7 +2,6 @@ openapi: 3.0.1
 info:
   title: Gatekeeper Resource Server public REST API
   description: Gatekeeper Swagger API
-  termsOfService: For internal use only
   contact:
     name: nuapay
     url: https://nuapay.com
@@ -10,7 +9,7 @@ info:
   license:
     name: For internal use only
     url: https://nuapay.com
-  version: 3.0.3
+  version: 3.3.0
   x-logo:
     backgroundColor: '#FFFFFF'
     url: https://www.nuapay.com/wp-content/uploads/2018/04/nuapay.svg
@@ -30,6 +29,14 @@ paths:
       description: List certificates
       operationId: listUsingGET
       parameters:
+        - name: type
+          in: query
+          description: Certificate type
+          schema:
+            type: string
+            enum:
+              - NON_REPUDIATION
+              - MTLS
         - name: pagenumber
           in: query
           description: Page number
@@ -82,6 +89,10 @@ paths:
             - pki_certificates
             - pki_certificates_read
         - PartnerApiKey: []
+        - PartnerGroupOAuth2:
+            - pki_certificates
+            - pki_certificates_read
+        - PartnerGroupApiKey: []
       x-sentenial:
         internal: false
     post:
@@ -148,9 +159,12 @@ paths:
         - PartnerOAuth2:
             - pki_certificates
         - PartnerApiKey: []
+        - PartnerGroupOAuth2:
+            - pki_certificates
+        - PartnerGroupApiKey: []
       x-codegen-request-body-name: request
       x-sentenial:
-        internal: false      
+        internal: false
   /certificates/{certificateId}:
     delete:
       tags:
@@ -194,8 +208,11 @@ paths:
             - pki_certificates
         - PartnerOAuth2:
             - pki_certificates
+        - PartnerGroupOAuth2:
+            - pki_certificates
+        - PartnerGroupApiKey: []
       x-sentenial:
-        internal: false     
+        internal: false
   /organisations/{encodedOrganisationId}/tokens:
     post:
       tags:
@@ -211,16 +228,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       requestBody:
         description: request
         content:
@@ -309,7 +316,7 @@ paths:
             - bankadmin
       x-codegen-request-body-name: request
       x-sentenial:
-        internal: false      
+        internal: false
   /organisations/{encodedOrganisationId}/applications/tokens:
     post:
       tags:
@@ -325,17 +332,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key.
-            The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       requestBody:
         description: request
         content:
@@ -426,7 +422,7 @@ paths:
             - application_tokens
       x-codegen-request-body-name: request
       x-sentenial:
-        internal: false      
+        internal: false
   /organisations/{encodedOrganisationId}/tokens/revoke:
     post:
       tags:
@@ -442,16 +438,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       responses:
         200:
           description: OK
@@ -503,7 +489,7 @@ paths:
         - PartnerGroupOAuth2:
             - bankadmin
       x-sentenial:
-        internal: false            
+        internal: false
   /organisations/{encodedOrganisationId}/tokens/{tokenId}/revoke:
     post:
       tags:
@@ -524,16 +510,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       responses:
         200:
           description: OK
@@ -600,7 +576,7 @@ paths:
         - PartnerGroupOAuth2:
             - bankadmin
       x-sentenial:
-        internal: false                                               
+        internal: false
   /tokens:
     post:
       tags:
@@ -608,17 +584,6 @@ paths:
       summary: Request Access Token
       description: The endpoint allows Organisation to exchange APIKey to AccessToken
       operationId: requestTokenUsingPOST
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       requestBody:
         description: request
         content:
@@ -704,7 +669,7 @@ paths:
             - bankadmin
       x-codegen-request-body-name: request
       x-sentenial:
-        internal: false      
+        internal: false
   /applications/tokens:
     post:
       tags:
@@ -713,17 +678,6 @@ paths:
       description: The endpoint allows Organisation to exchange APIKey to Application
         Access Token
       operationId: requestApplicationTokenUsingPOST
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       requestBody:
         description: request
         content:
@@ -805,7 +759,7 @@ paths:
             - application_tokens
       x-codegen-request-body-name: request
       x-sentenial:
-        internal: false      
+        internal: false
   /tokens/revoke:
     post:
       tags:
@@ -814,17 +768,6 @@ paths:
       description: The endpoint allows to Revoke to all Active AccessTokens for requesting
         Organisation
       operationId: revokeAllTokensUsingPOST
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       responses:
         200:
           description: OK
@@ -879,7 +822,7 @@ paths:
         - PartnerGroupOAuth2:
             - bankadmin
       x-sentenial:
-        internal: false            
+        internal: false
   /tokens/{tokenId}/revoke:
     post:
       tags:
@@ -894,16 +837,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Idempotency-Key
-          in: header
-          description: Every request will be processed only once per Idempotency-Key. The Idempotency Key will be valid for 24 hours.
-          schema:
-            maxLength: 50
-            type: string
-            x-sentenial:
-              enriched: "true"
-          x-sentenial:
-            enriched: "true"
       responses:
         200:
           description: OK
@@ -973,7 +906,7 @@ paths:
         - PartnerGroupOAuth2:
             - bankadmin
       x-sentenial:
-        internal: false                             
+        internal: false
 components:
   schemas:
     MTLS:
@@ -983,16 +916,6 @@ components:
           type: boolean
           description: Enables/Disables MTLS validation
           default: false
-        thumbprints:
-          maxLength: 122
-          minLength: 0
-          type: string
-          description: Semicolon separated list of Certificate thumbprints that are validated when MTLS is enabled.
-        subjectCommonName:
-          maxLength: 100
-          minLength: 0
-          type: string
-          description: Certificate Subject Common Name accepted when MTLS is enabled.
     CertificateGeneratePostResponseEnvelope:
       title: CertificateGeneratePostResponseEnvelope
       type: object
@@ -1006,6 +929,7 @@ components:
           id: 8ow24y2pdx
           links: []
           status: ACTIVE
+          type: NON-REPUDIATION
           uri: /certificates/8ow24y2pdx
           issueDate: 2018-12-06
           expiryDate: 2028-12-06
@@ -1016,12 +940,14 @@ components:
         uri: /certificates/8ow24y2pdx
     CertificateGenerateRequest:
       title: CertificateGenerateRequest
-      required:
-        - csr
       type: object
       properties:
         csr:
           type: string
+          description: Send Nuapay CRS PEM bytes and generate NON-REPUDIATION certificate
+        mtlsCert:
+          type: string
+          description: Send when  MTLS Certificate PEM bytes upload to be performed
       example:
         csr: "-----BEGIN CERTIFICATE REQUEST-----\r\nMIICnTCCAYUCAQAwWjETMBEGA1UEAwwKeDNsYnlwYmR3NDEPMA0GA1UECgwGTnVh\r\
           \ncGF5MRMwEQYDVQQLDApOdWFwYXkgQVBJMRAwDgYDVQQHDAdLaWxkYXJlMQswCQYD\r\nVQQGEwJJRTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK0PKltjIF8/\r\
@@ -1052,6 +978,7 @@ components:
         data:
           - id: 8ow24y2pdx
             status: ACTIVE
+            type: NON_REPUDIATION
             uri: /certificates/8ow24y2pdx
             issueDate: 2018-12-06
             expiryDate: 2028-12-06
@@ -1081,6 +1008,11 @@ components:
           enum:
             - ACTIVE
             - DELETED
+        type:
+          type: string
+          enum:
+            - MTLS
+            - NON-REPUDIATION
         uri:
           type: string
         issueDate:
@@ -1122,17 +1054,6 @@ components:
         returnDescription:
           type: string
           description: Error type description
-    OrganizationSecurityRequest:
-      title: OrganizationSecurityRequest
-      type: object
-      properties:
-        domains:
-          type: array
-          items:
-            type: string
-      example:
-        domains:
-          - http://www.sentenial.com
     RestResponseLink:
       title: RestResponseLink
       type: object
@@ -1262,7 +1183,10 @@ components:
             type: string
         ipFiltering:
           type: boolean
-          description: Indicate if IP filtering is enabled for returned token. If true request using the token can be done only from predefined IP address.
+          description: Indicates if IP filtering is enabled for returned token. If true request using the token can be done only from predefined IP address.
+        mtlsFilter:
+          type: boolean
+          description: Indicate if mTLS filtering is enabled for returned token. If true request using the token can be done only with mutual TLS (keystore/truststore).
         requestedOrganisation:
           type: string
           description: Encoded organisation id the token was generated for.
@@ -1332,14 +1256,6 @@ components:
             admin: Use this scope if you are Merchant
             pki_certificates: Use this scope to  create or delete certificate.
             pki_certificates_read: Use this scope to read certificates.
-            organisation_products: Use this scope to manage organisation products.
-            organisation_products_read: Use this scope to read organisation products.
-            products_read: Use this scope to read all products.
-            user_scopes: Use this scope to manage the user scopes.
-            user_scopes_read: Use this scope to read the user scopes.
-            user_init: Use this scope to initialize a user credentials.
-            credentials_status: Use this scope to get a user credentials status.
-            organisation_security_admin: Use this scope to manage security configuration.
             application_tokens: Use this scope to request application token.
     PartnerOAuth2:
       type: oauth2
@@ -1350,14 +1266,6 @@ components:
             bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
             pki_certificates: Use this scope to  create or delete certificate.
             pki_certificates_read: Use this scope to read certificates.
-            organisation_products: Use this scope to manage organisation products.
-            organisation_products_read: Use this scope to read organisation products.
-            products_read: Use this scope to read all products.
-            scopes_read: Use this scope to read organisation available scopes.
-            user_scopes: Use this scope to manage the user scopes.
-            user_scopes_read: Use this scope to read the user scopes.
-            user_init: Use this scope to initialize a user credentials.
-            organisation_security_admin: Use this scope to manage security configuration.
     PartnerGroupOAuth2:
       type: oauth2
       flows:
@@ -1367,33 +1275,3 @@ components:
             bankadmin: Use the scope to list organisations you have access to, request and revoke access tokens.
             pki_certificates: Use this scope to  create or delete certificate.
             pki_certificates_read: Use this scope to read certificates.
-            organisation_products: Use this scope to manage organisation products.
-            organisation_products_read: Use this scope to read organisation products.
-            products_read: Use this scope to read all products.
-            scopes_read: Use this scope to read organisation available scopes.
-            user_scopes: Use this scope to manage the user scopes.
-            user_scopes_read: Use this scope to read the user scopes.
-            user_init: Use this scope to initialize a user credentials.
-            organisation_security_admin: Use this scope to manage security configuration.
-    AdminOAuth2:
-      type: oauth2
-      flows:
-        password:
-          tokenUrl: https://api.nuapay.com/oauth/token_key
-          scopes:
-            organisation_products: Use this scope to manage organisation products.
-            organisation_products_read: Use this scope to read organisation products.
-            products_read: Use this scope to read all products.
-            scopes_read: Use this scope to read organisation available scopes.
-            user_scopes: Use this scope to manage the user scopes.
-            user_scopes_read: Use this scope to read the user scopes.
-            user_init: Use this scope to initialize a user credentials.
-    SystemOAuth2:
-      type: oauth2
-      flows:
-        password:
-          tokenUrl: https://api.nuapay.com/oauth/token_key
-          scopes:
-            organisation_products: Use this scope to manage organisation products.
-            organisation_products_read: Use this scope to read organisation products.
-            products_read: Use this scope to read all products.
